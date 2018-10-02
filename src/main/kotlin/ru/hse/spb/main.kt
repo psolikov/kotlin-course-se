@@ -42,7 +42,7 @@ class Graph(private val size: Int) {
     }
 
     fun printDistances() {
-        distances.forEach { pair -> print(pair.second); print(" ") }
+        distances.forEach { pair -> print("${pair.second} ") }
     }
 
     private fun dfs(v: Int): Boolean {
