@@ -4,12 +4,12 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class Graph(private val size: Int, private val g: List<List<Int>>) {
-    private val cycle: ArrayList<Int> = ArrayList()
-    private val distances: ArrayList<Pair<Int, Int>> = ArrayList()
-    private val parent: ArrayList<Int> = ArrayList()
-    private val color: ArrayList<Int> = ArrayList()
-    private var cycleStart: Int = -1
-    private var cycleEnd: Int = -1
+    private val cycle = ArrayList<Int>()
+    private val distances = ArrayList<Pair<Int, Int>>()
+    private val parent = ArrayList<Int>()
+    private val color = ArrayList<Int>()
+    private var cycleStart = -1
+    private var cycleEnd = -1
 
     init {
         for (i in 0 until size) {
@@ -96,11 +96,11 @@ fun addEdge(g: ArrayList<ArrayList<Int>>, from: Int, to: Int) {
 
 fun main(args: Array<String>) {
     val reader = Scanner(System.`in`)
-    val n: Int = reader.nextInt()
+    val n = reader.nextInt()
     val g = createGraph(n)
     for (i in 0 until n) {
-        val from: Int = reader.nextInt()
-        val to: Int = reader.nextInt()
+        val from = reader.nextInt()
+        val to = reader.nextInt()
         addEdge(g, from, to)
     }
     val graph = Graph(n, g)
