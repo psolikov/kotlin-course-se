@@ -3,8 +3,7 @@ package ru.hse.spb
 import java.util.*
 import kotlin.collections.ArrayList
 
-class Graph(private val size: Int) {
-    private val g: ArrayList<ArrayList<Int>> = ArrayList()
+class Graph(private val size: Int, private val g: List<List<Int>>) {
     private val cycle: ArrayList<Int> = ArrayList()
     private val distances: ArrayList<Pair<Int, Int>> = ArrayList()
     private val parent: ArrayList<Int> = ArrayList()
@@ -14,15 +13,9 @@ class Graph(private val size: Int) {
 
     init {
         for (i in 0 until size) {
-            g.add(ArrayList())
             parent.add(-1)
             color.add(0)
         }
-    }
-
-    fun addEdge(from: Int, to: Int) {
-        g[from - 1].add(to - 1)
-        g[to - 1].add(from - 1)
     }
 
     fun findCycle() {
@@ -88,15 +81,29 @@ class Graph(private val size: Int) {
     }
 }
 
+fun createGraph(size: Int): ArrayList<ArrayList<Int>> {
+    val g = ArrayList<ArrayList<Int>>()
+    for (i in 0 until size) {
+        g.add(ArrayList())
+    }
+    return g
+}
+
+fun addEdge(g: ArrayList<ArrayList<Int>>, from: Int, to: Int) {
+    g[from - 1].add(to - 1)
+    g[to - 1].add(from - 1)
+}
+
 fun main(args: Array<String>) {
     val reader = Scanner(System.`in`)
     val n: Int = reader.nextInt()
-    val graph = Graph(n)
+    val g = createGraph(n)
     for (i in 0 until n) {
         val from: Int = reader.nextInt()
         val to: Int = reader.nextInt()
-        graph.addEdge(from, to)
+        addEdge(g, from, to)
     }
+    val graph = Graph(n, g)
     graph.findCycle()
     graph.findDistances()
     graph.printDistances()
