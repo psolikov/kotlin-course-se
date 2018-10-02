@@ -3,11 +3,10 @@ package ru.hse.spb
 import java.util.*
 import kotlin.collections.ArrayList
 
-class Graph(_size: Int) {
+class Graph(private val size: Int) {
     private val g: ArrayList<ArrayList<Int>> = ArrayList()
     private val cycle: ArrayList<Int> = ArrayList()
     private val distances: ArrayList<Pair<Int, Int>> = ArrayList()
-    private val size: Int = _size
     private val parent: ArrayList<Int> = ArrayList()
     private val color: ArrayList<Int> = ArrayList()
     private var cycleStart: Int = -1
