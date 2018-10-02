@@ -37,13 +37,11 @@ class Graph(private val size: Int) {
 
     fun findDistances() {
         distances.addAll(cycle.map { v -> Pair(v, 0) })
-        cycle.forEach { v -> bfs(v) }
-        distances.sortBy { pair -> pair.first }
+        cycle.forEach(this::bfs)
+        distances.sortBy(Pair<Int, Int>::first)
     }
 
-    fun printDistances() {
-        distances.forEach { pair -> print("${pair.second} ") }
-    }
+    fun printDistances() = distances.forEach { print("${it.second} ") }
 
     private fun dfs(v: Int): Boolean {
         color[v] = 1
