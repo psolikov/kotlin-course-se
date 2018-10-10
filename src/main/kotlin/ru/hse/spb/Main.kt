@@ -139,7 +139,7 @@ class CustomTag(name: String, root: Document?) : BlockWithBody(name, root) {
 class DocumentClass(arg: String, root: Document?) : TagWithText("documentclass", root) {
     init {
         if (root?.documentClassInstance == null) root?.documentClassInstance = "\\documentclass{$arg}\n"
-        else throw RuntimeException("Sanya")
+        else throw RuntimeException("Duplicated documentclass")
     }
 }
 
@@ -156,7 +156,7 @@ class Usepackage(root: Document?, arg: String, vararg args: String) : TagWithTex
                 root.header.append("]")
             }
             root.header.append("{$arg}\n")
-        } else throw RuntimeException("Sanya")
+        } else throw RuntimeException("No usepackage provided")
     }
 }
 
