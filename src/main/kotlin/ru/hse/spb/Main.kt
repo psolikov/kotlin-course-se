@@ -2,7 +2,6 @@ package ru.hse.spb
 
 import java.io.OutputStream
 import java.io.PrintWriter
-import java.util.*
 
 @DslMarker
 annotation class TexTagMarker
@@ -17,10 +16,12 @@ class TextElement(private val text: String) : Element {
     }
 }
 
+data class AttributeValue(val id: Int, val value: String)
+
 @TexTagMarker
 abstract class Tag(private val name: String, val root: Document?) : Element {
-    val children = arrayListOf<Element>()
-    val attributes = hashMapOf<String, Pair<Int, String>>()
+    protected val children = arrayListOf<Element>()
+    protected val attributes = hashMapOf<String, AttributeValue>()
 
     protected fun <T : Element> initTag(tag: T, init: T.() -> Unit): T {
         tag.init()
@@ -38,30 +39,17 @@ abstract class Tag(private val name: String, val root: Document?) : Element {
 
     private fun renderAttributes(): String {
         val builder = StringBuilder()
-        for ((_, value) in attributes.values.filter { it.first == 1 }) {
+        for ((_, value) in attributes.values.filter { it.id == 1 }) {
             builder.append("{$value}")
         }
-        if (attributes.values.any { it.first == 2 }) {
-            builder.append("[")
-            var i = 0
-            val size = attributes.values.filter { it.first == 2 }.size
-            for ((_, value) in attributes.values.filter { it.first == 2 }) {
-                if (i == size - 1) {
-                    builder.append(value)
-                } else {
-                    builder.append(",$value")
-                }
-                i++
-            }
-            builder.append("]")
+        if (attributes.values.any { it.id == 2 }) {
+            attributes.values.filter { it.id == 2 }.joinTo(builder, prefix = "[", postfix = "]") { it.value }
         }
         return builder.toString()
     }
 
     override fun toString(): String {
-        val builder = StringBuilder()
-        render(builder)
-        return builder.toString()
+        return buildString { render(this@buildString) }
     }
 }
 
@@ -77,13 +65,13 @@ class Document : TagWithText("document", null) {
 
     fun frame(frameTitle: String, pair: Pair<String, String>, init: Frame.() -> Unit) {
         val frame = initTag(Frame(root), init)
-        frame.frameTitle = Pair(1, frameTitle)
-        frame.pair = Pair(2, "${pair.first}=${pair.second}")
+        frame.frameTitle = AttributeValue(1, frameTitle)
+        frame.pair = AttributeValue(2, "${pair.first}=${pair.second}")
     }
 
     fun customTag(name: String, pair: Pair<String, String>, init: CustomTag.() -> Unit) {
         val cTag = initTag(CustomTag(name, root), init)
-        cTag.pair = Pair(2, "${pair.first}=${pair.second}")
+        cTag.pair = AttributeValue(2, "${pair.first}=${pair.second}")
     }
 
     fun documentClass(arg: String) = DocumentClass(arg, this)
@@ -98,12 +86,12 @@ class Document : TagWithText("document", null) {
         initTag(Enumerate(root), init)
     }
 
-    fun math(init: ru.hse.spb.Math.() -> Unit) {
-        initTag(ru.hse.spb.Math(root), init)
+    fun math(init: Math.() -> Unit) {
+        initTag(Math(root), init)
     }
 
-    fun align(init: ru.hse.spb.Align.() -> Unit) {
-        initTag(ru.hse.spb.Align(root), init)
+    fun align(init: Align.() -> Unit) {
+        initTag(Align(root), init)
     }
 
     fun toOutputStream(os: OutputStream) {
@@ -116,12 +104,12 @@ class Document : TagWithText("document", null) {
 }
 
 class Frame(root: Document?) : BlockWithBody("frame", root) {
-    var frameTitle: Pair<Int, String>
+    var frameTitle: AttributeValue
         get() = attributes["frameTitle"]!!
         set(value) {
             attributes["frameTitle"] = value
         }
-    var pair: Pair<Int, String>
+    var pair: AttributeValue
         get() = attributes["pair"]!!
         set(value) {
             attributes["pair"] = value
@@ -129,7 +117,7 @@ class Frame(root: Document?) : BlockWithBody("frame", root) {
 }
 
 class CustomTag(name: String, root: Document?) : BlockWithBody(name, root) {
-    var pair: Pair<Int, String>
+    var pair: AttributeValue
         get() = attributes["pair"]!!
         set(value) {
             attributes["pair"] = value
@@ -148,12 +136,7 @@ class Usepackage(root: Document?, arg: String, vararg args: String) : TagWithTex
         if (root?.header != null) {
             root.header.append("\\usepackage")
             if (args.isNotEmpty()) {
-                root.header.append("[")
-                for (i in 0 until args.size - 1) {
-                    root.header.append("${args[i]}, ")
-                }
-                root.header.append(args[args.size - 1])
-                root.header.append("]")
+                args.joinTo(root.header, prefix = "[", postfix = "]")
             }
             root.header.append("{$arg}\n")
         } else throw RuntimeException("No usepackage provided")
@@ -163,7 +146,7 @@ class Usepackage(root: Document?, arg: String, vararg args: String) : TagWithTex
 abstract class BlockWithBody(name: String, root: Document?) : TagWithText(name, root) {
     fun customTag(name: String, pair: Pair<String, String>, init: CustomTag.() -> Unit) {
         val cTag = initTag(CustomTag(name, root), init)
-        cTag.pair = Pair(2, "${pair.first}=${pair.second}")
+        cTag.pair = AttributeValue(2, "${pair.first}=${pair.second}")
     }
 
     fun itemize(init: Itemize.() -> Unit) {
@@ -174,12 +157,12 @@ abstract class BlockWithBody(name: String, root: Document?) : TagWithText(name, 
         initTag(Enumerate(root), init)
     }
 
-    fun math(init: ru.hse.spb.Math.() -> Unit) {
-        initTag(ru.hse.spb.Math(root), init)
+    fun math(init: Math.() -> Unit) {
+        initTag(Math(root), init)
     }
 
-    fun align(init: ru.hse.spb.Align.() -> Unit) {
-        initTag(ru.hse.spb.Align(root), init)
+    fun align(init: Align.() -> Unit) {
+        initTag(Align(root), init)
     }
 }
 
@@ -202,7 +185,5 @@ class Item(root: Document?) : BlockWithBody("item", root)
 class Enum(root: Document?) : BlockWithBody("enum", root)
 
 fun document(init: Document.() -> Unit): Document {
-    val doc = Document()
-    doc.init()
-    return doc
+    return Document().apply(init)
 }
